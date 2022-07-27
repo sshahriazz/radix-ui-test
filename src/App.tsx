@@ -1,25 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Button from "components/Button/button";
+import Text from "components/Text/Text";
+import { useState } from "react";
+import { createTheme } from "theme/stitches.config";
+import ThemeProvider from "theme/theme-provider";
 
 function App() {
+  const dark = createTheme({
+    type: "dark",
+  });
+  const light = createTheme({
+    type: "light",
+  });
+  const [isDark, setIsDark] = useState(false);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={isDark ? dark : light}>
+      <Text
+        margin={10}
+        size={50}
+        h1
+        css={{ textGradient: "45deg, $yellow600 -20%, $red600 100%" }}
+      >
+        Hello POlash is nice
+      </Text>
+      <Button color={"success"} size={"sm"} auto shadow>
+        Button
+      </Button>
+      <Button onPress={() => setIsDark((dark) => !dark)}>Button</Button>
+      <Button flat>Button</Button>
+      <Button>Button</Button>
+      <Button shadow>Button</Button>
+    </ThemeProvider>
   );
 }
 
