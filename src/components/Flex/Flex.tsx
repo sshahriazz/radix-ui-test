@@ -1,13 +1,12 @@
 import React, { ReactNode, useMemo } from "react";
 import withDefaults from "utils/with-defaults";
-import { SimpleColors, TextTransforms } from "utils/prop-types";
 import { ReactRef } from "utils/refs";
 import { useDOMRef } from "utils/dom";
 import { __DEV__ } from "utils/assertion";
+import { FlexChild, FlexChildProps } from "./Child";
 
 export interface Props {
   children?: ReactNode;
-  bg?: SimpleColors | string;
 }
 
 const defaultProps = {
@@ -18,44 +17,38 @@ const defaultProps = {
   h5: false,
   h6: false,
   b: false,
+  div: false,
   small: false,
-  transform: "none" as TextTransforms,
   i: false,
   span: false,
   del: false,
   em: false,
   blockquote: false,
-  color: "default" as SimpleColors | string,
 };
 
 type ElementMap = { [key in keyof JSX.IntrinsicElements]?: boolean };
 
 type NativeAttrs = Omit<React.HTMLAttributes<unknown>, keyof Props>;
 
-export type TextProps = Props &
+export type FlexProps = Props &
   typeof defaultProps &
   NativeAttrs &
-  Omit<TextChildProps, keyof Props | "tag">;
-
-type TextRenderableElements = Array<keyof JSX.IntrinsicElements>;
+  Omit<FlexChildProps, keyof Props | "tag">;
+type FlexRenderableElements = Array<keyof JSX.IntrinsicElements>;
 
 const getModifierChild = (
-  tags: TextRenderableElements,
-  children: ReactNode,
-  size?: string | number,
-  transform?: TextTransforms
+  tags: FlexRenderableElements,
+  children: ReactNode
 ) => {
   if (!tags.length) return children;
   const nextTag = tags.slice(1, tags.length);
   return (
-    <TextChild tag={tags[0]} size={size} transform={transform}>
-      {getModifierChild(nextTag, children, size)}
-    </TextChild>
+    <FlexChild tag={tags[0]}>{getModifierChild(nextTag, children)}</FlexChild>
   );
 };
 
-export const Text = React.forwardRef(
-  (props: TextProps, ref: ReactRef<HTMLElement>) => {
+export const Flex = React.forwardRef(
+  (props: FlexProps, ref: ReactRef<HTMLElement>) => {
     const {
       h1,
       h2,
@@ -63,6 +56,7 @@ export const Text = React.forwardRef(
       h4,
       h5,
       h6,
+      div,
       b,
       small,
       i,
@@ -70,75 +64,52 @@ export const Text = React.forwardRef(
       del,
       em,
       blockquote,
-      transform,
-      size,
-      margin,
       children,
       ...otherProps
     } = props;
 
     const domRef = useDOMRef(ref);
 
-    const elements: ElementMap = { h1, h2, h3, h4, h5, h6, blockquote };
+    const elements: ElementMap = { div, h1, h2, h3, h4, h5, h6, blockquote };
     const inlineElements: ElementMap = { span, small, b, em, i, del };
     const names = Object.keys(elements).filter(
       //@ts-ignore
       (name: keyof JSX.IntrinsicElements) => elements[name]
-    ) as TextRenderableElements;
+    ) as FlexRenderableElements;
     const inlineNames = Object.keys(inlineElements).filter(
       //@ts-ignore
       (name: keyof JSX.IntrinsicElements) => inlineElements[name]
-    ) as TextRenderableElements;
-    /**
-     *  Render element "p" only if no element is found.
-     *  If there is only one modifier, just rendered one modifier element
-     *  e.g.
-     *    <Text /> => <p />
-     *    <Text em /> => <em />
-     *    <Text b em /> => <b><em>children</em></b>
-     */
+    ) as FlexRenderableElements;
 
     const tag = useMemo(() => {
       if (names[0]) return names[0];
       if (inlineNames[0]) return inlineNames[0];
-      return "p" as keyof JSX.IntrinsicElements;
+      return "div" as keyof JSX.IntrinsicElements;
     }, [names, inlineNames]);
 
     const renderableChildElements = inlineNames.filter(
       (name: keyof JSX.IntrinsicElements) => name !== tag
-    ) as TextRenderableElements;
+    ) as FlexRenderableElements;
 
     const modifers = useMemo(() => {
       if (!renderableChildElements.length) return children;
-      return getModifierChild(
-        renderableChildElements,
-        children,
-        size,
-        transform
-      );
-    }, [renderableChildElements, children, size, transform]);
+      return getModifierChild(renderableChildElements, children);
+    }, [renderableChildElements, children]);
 
     return (
-      <TextChild
-        ref={domRef}
-        transform={transform}
-        tag={tag}
-        margin={margin}
-        size={size}
-        {...otherProps}
-      >
+      <FlexChild ref={domRef} tag={tag} {...otherProps}>
         {modifers}
-      </TextChild>
+      </FlexChild>
     );
   }
 );
 
 if (__DEV__) {
-  Text.displayName = "Trident.Text";
+  Flex.displayName = "Trident.Flex";
 }
 
-Text.toString = () => ".trident-text";
+Flex.toString = () => ".trident-flex";
 
-const MemoText = React.memo(Text);
+const MemoFlex = React.memo(Flex);
 
-export default withDefaults(MemoText, defaultProps);
+export default withDefaults(MemoFlex, defaultProps);
