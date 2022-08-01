@@ -21,7 +21,8 @@ export const cssFocusVisible = css({
       true: {
         outline: "transparent solid 2px",
         outlineOffset: "2px",
-        boxShadow: "0 0 0 2px $colors$background, 0 0 0 4px $colors$primary",
+        boxShadow:
+          "0 0 0 2px $colors$background, 0 0 0 4px $colors$primary !important",
       },
       false: {
         outline: "none",
